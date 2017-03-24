@@ -1,5 +1,6 @@
 package mt.app.server;
 
+import com.codahale.metrics.JmxReporter;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
@@ -21,6 +22,9 @@ public abstract class Server extends AbstractServer {
 			InjectorHolder.setInjector(injector);
 		}
 		Application instance = injector.getInstance(Application.class);
+		JmxReporter jmxReporter = injector.getInstance(JmxReporter.class);
+		jmxReporter.start();
+
 		instance.start();
 	}
 

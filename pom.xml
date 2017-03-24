@@ -32,6 +32,7 @@
 		<maven-jar-plugin.version>2.4</maven-jar-plugin.version>
 		<logback.version>1.1.7</logback.version>
 		<slf4j-api.version>1.7.21</slf4j-api.version>
+		<metrics-version>3.1.2</metrics-version>
 	</properties>
 
 	<build>
@@ -155,6 +156,11 @@
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
 			<version>${logback.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.dropwizard.metrics</groupId>
+			<artifactId>metrics-core</artifactId>
+			<version>${metrics-version}</version>
 		</dependency>
 
 		<dependency>

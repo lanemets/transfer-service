@@ -5,6 +5,7 @@ import com.google.inject.Module;
 import mt.app.dao.AccountDaoModule;
 import mt.app.dao.DatabaseConfigurationModule;
 import mt.app.dao.TransferDaoModule;
+import mt.app.modules.MetricsModule;
 import mt.app.modules.MoneyTransferPropertiesModule;
 import mt.app.service.account.AccountServiceModule;
 import mt.app.service.transfer.TransferServiceModule;
@@ -20,6 +21,7 @@ public class ServerApplication extends Server {
 	@Override
 	protected Iterable<Module> getModules() {
 		return ImmutableList.of(
+			new MetricsModule(),
 			new MoneyTransferPropertiesModule(),
 			new TransferServiceModule(),
 			new DatabaseConfigurationModule(),

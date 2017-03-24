@@ -1,5 +1,6 @@
 package mt.app.server;
 
+import com.codahale.metrics.MetricRegistry;
 import mt.app.ApplicationConfiguration;
 import mt.app.ErrorCode;
 import mt.app.ErrorResult;
@@ -32,22 +33,25 @@ class Application {
 	private final TransferService transferService;
 	private final AccountService accountService;
 	private final ApplicationConfiguration applicationConfiguration;
+	private final MetricRegistry metricRegistry;
 
 	@Inject
 	Application(
 		TransferService transferService,
 		AccountService accountService,
-		ApplicationConfiguration applicationConfiguration
+		ApplicationConfiguration applicationConfiguration,
+		MetricRegistry metricRegistry
 	) {
 		this.transferService = transferService;
 		this.accountService = accountService;
 		this.applicationConfiguration = applicationConfiguration;
+		this.metricRegistry = metricRegistry;
 	}
 
 	void start() throws DatabaseInitializationException {
 		logger.debug("starting application...");
 
-		initDb(applicationConfiguration);
+		initDb(applicationConfiguration, metricRegistry);
 
 		port(applicationConfiguration.getPort());
 
@@ -63,20 +67,28 @@ class Application {
 					Long.valueOf(request.params(":to")),
 					new BigDecimal(request.params(":amount"))
 				);
+
+				reportCounter(metricRegistry, "transfer_success");
 				return new Response<>(txnId, null);
 			} catch (IllegalAccountNumberException exception) {
 				String errorMessage = String.format("invalid account numbers: %d, %d",
 					Long.valueOf(request.params(":from")),
 					Long.valueOf(request.params(":to")));
 				logger.error(errorMessage, exception);
+
+				reportCounter(metricRegistry, "transfer_err_illegal_account");
 				return new Response<>(null, new ErrorResult(ErrorCode.ILLEGAL_ACCOUNT_ID, errorMessage));
 			} catch (NoEnoughMoneyException exception) {
 				String errorMessage = "no enough money on accountFrom to withdraw";
 				logger.error(errorMessage, exception);
+
+				reportCounter(metricRegistry, "transfer_err_no_money");
 				return new Response<>(null, new ErrorResult(ErrorCode.NO_ENOUGH_MONEY, errorMessage));
 			} catch (Exception exception) {
 				String errorMessage = "unexpected exception has occurred";
 				logger.error(errorMessage, exception);
+
+				reportCounter(metricRegistry, "transfer_err_other");
 				return new Response<>(null, new ErrorResult(ErrorCode.OTHER, errorMessage));
 			}
 		}, json());
@@ -84,14 +96,20 @@ class Application {
 		get("/account/:id", (request, response) -> {
 			try {
 				Account accountById = accountService.getAccountById(Long.valueOf(request.params(":id")));
+
+				reportCounter(metricRegistry, "get_account_success");
 				return new Response<>(accountById, null);
 			} catch (IllegalAccountNumberException exception) {
 				String errorMessage = String.format("invalid account number: %d", Long.valueOf(request.params(":id")));
 				logger.error(errorMessage, exception);
+
+				reportCounter(metricRegistry, "get_account_err_illegal_account");
 				return new Response<>(null, new ErrorResult(ErrorCode.ILLEGAL_ACCOUNT_ID, errorMessage));
 			} catch (Exception exception) {
 				String errorMessage = "unexpected exception has occurred";
 				logger.error(errorMessage, exception);
+
+				reportCounter(metricRegistry, "get_account_err_other");
 				return new Response<>(null, new ErrorResult(ErrorCode.OTHER, errorMessage));
 			}
 		}, json());
@@ -99,7 +117,10 @@ class Application {
 		logger.debug("started on port: {}", applicationConfiguration.getPort());
 	}
 
-	private static void initDb(ApplicationConfiguration applicationConfiguration) throws DatabaseInitializationException {
+	private static void initDb(
+		ApplicationConfiguration applicationConfiguration,
+		MetricRegistry metricRegistry
+	) throws DatabaseInitializationException {
 		try {
 			URL scriptFile = getResource(applicationConfiguration.getInitSchemaFileName());
 			logger.debug("starting database initializing; script file: {}", scriptFile.getFile());
@@ -115,7 +136,13 @@ class Application {
 		} catch (Exception exception) {
 			String message = "an error has occurred during init script execution. Unable to proceed";
 			logger.error(message, exception);
+
+			reportCounter(metricRegistry, "db_init_error");
 			throw new DatabaseInitializationException(message, exception);
 		}
+	}
+
+	private static void reportCounter(MetricRegistry metricRegistry, String counterName) {
+		metricRegistry.counter(counterName).inc();
 	}
 }

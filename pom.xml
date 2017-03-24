@@ -12,27 +12,26 @@
 
 	<properties>
 		<java.version>1.8</java.version>
-		<spark-version>2.5.5</spark-version>
-		<jooq-version>3.9.1</jooq-version>
-		<h2-version>1.4.193</h2-version>
+		<spark.version>2.5.5</spark.version>
+		<jooq.version>3.9.1</jooq.version>
+		<h2.version>1.4.193</h2.version>
 		<maven-compiler.version>3.1</maven-compiler.version>
-		<h2-url>jdbc:h2:mem:money_transfer_db\;INIT=RUNSCRIPT FROM '~/schema.sql'</h2-url>
-		<testng-version>6.8.7</testng-version>
-		<mockito-version>1.10.19</mockito-version>
-		<httpclient-version>4.5.2</httpclient-version>
-		<commons.io-version>2.5</commons.io-version>
-		<guice-version>3.0</guice-version>
-		<gson-version>2.6.2</gson-version>
-		<guava-version>19.0</guava-version>
-		<apache-commons-version>3.4</apache-commons-version>
-		<hikaricp-version>2.4.7</hikaricp-version>
-		<commons-io-version>2.5</commons-io-version>
+		<h2.url>jdbc:h2:mem:money_transfer_db\;INIT=RUNSCRIPT FROM '~/schema.sql'</h2.url>
+		<testng.version>6.8.7</testng.version>
+		<mockito.version>1.10.19</mockito.version>
+		<httpclient.version>4.5.2</httpclient.version>
+		<commons-io.version>2.5</commons-io.version>
+		<guice.version>3.0</guice.version>
+		<gson.version>2.6.2</gson.version>
+		<guava.version>19.0</guava.version>
+		<apache-commons.version>3.4</apache-commons.version>
+		<hikaricp.version>2.4.7</hikaricp.version>
+		<commons-io.version>2.5</commons-io.version>
 
-		<maven-surefire-plugin-version>2.16</maven-surefire-plugin-version>
-		<maven-jar-plugin-version>2.4</maven-jar-plugin-version>
-
-		<logback-version>1.1.7</logback-version>
-		<slf4j-api-version>1.7.21</slf4j-api-version>
+		<maven-surefire-plugin.version>2.16</maven-surefire-plugin.version>
+		<maven-jar-plugin.version>2.4</maven-jar-plugin.version>
+		<logback.version>1.1.7</logback.version>
+		<slf4j-api.version>1.7.21</slf4j-api.version>
 	</properties>
 
 	<build>
@@ -49,7 +48,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>${maven-surefire-plugin-version}</version>
+				<version>${maven-surefire-plugin.version}</version>
 				<executions>
 					<execution>
 						<goals>
@@ -65,7 +64,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>${maven-jar-plugin-version}</version>
+				<version>${maven-jar-plugin.version}</version>
 			</plugin>
 		</plugins>
 
@@ -85,95 +84,95 @@
 		<dependency>
 			<groupId>com.sparkjava</groupId>
 			<artifactId>spark-core</artifactId>
-			<version>${spark-version}</version>
+			<version>${spark.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.inject</groupId>
 			<artifactId>guice</artifactId>
-			<version>${guice-version}</version>
+			<version>${guice.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
-			<version>${gson-version}</version>
+			<version>${gson.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<version>${guava-version}</version>
+			<version>${guava.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
-			<version>${apache-commons-version}</version>
+			<version>${apache-commons.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.jooq</groupId>
 			<artifactId>jooq</artifactId>
-			<version>${jooq-version}</version>
+			<version>${jooq.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.jooq</groupId>
 			<artifactId>jooq-meta</artifactId>
-			<version>${jooq-version}</version>
+			<version>${jooq.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.jooq</groupId>
 			<artifactId>jooq-codegen</artifactId>
-			<version>${jooq-version}</version>
+			<version>${jooq.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
-			<version>${h2-version}</version>
+			<version>${h2.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.zaxxer</groupId>
 			<artifactId>HikariCP</artifactId>
-			<version>${hikaricp-version}</version>
+			<version>${hikaricp.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
-			<version>${commons-io-version}</version>
+			<version>${commons-io.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>${slf4j-api-version}</version>
+			<version>${slf4j-api.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-core</artifactId>
-			<version>${logback-version}</version>
+			<version>${logback.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
-			<version>${logback-version}</version>
+			<version>${logback.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.testng</groupId>
 			<artifactId>testng</artifactId>
-			<version>${testng-version}</version>
+			<version>${testng.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-all</artifactId>
-			<version>${mockito-version}</version>
+			<version>${mockito.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
-			<version>${httpclient-version}</version>
+			<version>${httpclient.version}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -187,13 +186,13 @@
 					<plugin>
 						<groupId>org.jooq</groupId>
 						<artifactId>jooq-codegen-maven</artifactId>
-						<version>${jooq-version}</version>
+						<version>${jooq.version}</version>
 
 						<dependencies>
 							<dependency>
 								<groupId>com.h2database</groupId>
 								<artifactId>h2</artifactId>
-								<version>${h2-version}</version>
+								<version>${h2.version}</version>
 							</dependency>
 						</dependencies>
 
@@ -213,7 +212,7 @@
 								<driver>org.h2.Driver</driver>
 								<user>sa</user>
 								<password></password>
-								<url>${h2-url}</url>
+								<url>${h2.url}</url>
 							</jdbc>
 
 							<!-- Generator parameters -->

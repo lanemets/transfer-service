@@ -15,7 +15,7 @@ import javax.sql.DataSource;
 import java.io.IOException;
 import java.sql.SQLException;
 
-public class JooqConfigurationModule extends AbstractModule {
+public class DatabaseConfigurationModule extends AbstractModule {
 	@Override
 	protected void configure() {
 	}

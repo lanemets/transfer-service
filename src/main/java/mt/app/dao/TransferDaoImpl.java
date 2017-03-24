@@ -25,7 +25,7 @@ class TransferDaoImpl implements TransferDao {
 	}
 
 	@Override
-	public synchronized long transfer(Account accountFrom, Account accountTo, BigDecimal amount) {
+	public long transfer(Account accountFrom, Account accountTo, BigDecimal amount) {
 		AtomicLong txnId = new AtomicLong();
 		dslContext.transaction(
 			configuration -> {

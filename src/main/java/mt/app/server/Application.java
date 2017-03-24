@@ -36,7 +36,8 @@ class Application {
 	@Inject
 	Application(
 		TransferService transferService,
-		AccountService accountService, ApplicationConfiguration applicationConfiguration
+		AccountService accountService,
+		ApplicationConfiguration applicationConfiguration
 	) {
 		this.transferService = transferService;
 		this.accountService = accountService;
@@ -112,8 +113,9 @@ class Application {
 				false
 			);
 		} catch (Exception exception) {
-			logger.error("an error has occurred during init script execution. Unable to proceed", exception);
-			throw new DatabaseInitializationException();
+			String message = "an error has occurred during init script execution. Unable to proceed";
+			logger.error(message, exception);
+			throw new DatabaseInitializationException(message, exception);
 		}
 	}
 }

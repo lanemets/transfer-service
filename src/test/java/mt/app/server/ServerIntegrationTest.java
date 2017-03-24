@@ -6,7 +6,7 @@ import com.google.gson.reflect.TypeToken;
 import com.google.inject.Module;
 import mt.app.*;
 import mt.app.dao.AccountDaoModule;
-import mt.app.dao.JooqConfigurationModule;
+import mt.app.dao.DatabaseConfigurationModule;
 import mt.app.dao.TransferDaoModule;
 import mt.app.modules.TestMoneyTransferPropertiesModule;
 import mt.app.service.account.AccountServiceModule;
@@ -265,7 +265,7 @@ public class ServerIntegrationTest {
 				new TestMoneyTransferPropertiesModule(),
 				new TransferServiceModule(),
 				new TransferDaoModule(),
-				new JooqConfigurationModule(),
+				new DatabaseConfigurationModule(),
 				new AccountDaoModule(),
 				new AccountServiceModule()
 			);

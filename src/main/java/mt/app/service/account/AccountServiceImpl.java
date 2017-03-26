@@ -23,8 +23,9 @@ class AccountServiceImpl implements AccountService {
 		logger.debug("get account by id; accountId: {}", accountId);
 		Account accountById = accountDao.getAccountById(accountId);
 		if (null == accountById) {
-			logger.error("no account has been found for given id: {}", accountId);
-			throw new IllegalAccountNumberException();
+			String errorMessage = String.format("no account has been found for given id: %s", accountId);
+			logger.error(errorMessage);
+			throw new IllegalAccountNumberException(errorMessage);
 		}
 		return accountById;
 	}

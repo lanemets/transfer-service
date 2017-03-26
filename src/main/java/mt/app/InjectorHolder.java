@@ -7,7 +7,7 @@ public class InjectorHolder {
 	private Injector injector;
 	private static final InjectorHolder me = new InjectorHolder();
 
-	InjectorHolder() {
+	private InjectorHolder() {
 	}
 
 	public static void setInjector(Injector injector) {

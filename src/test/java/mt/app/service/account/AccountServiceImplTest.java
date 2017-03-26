@@ -30,7 +30,7 @@ public class AccountServiceImplTest {
 		verify(accountDao).getAccountById(eq(ACCOUNT_ID));
 	}
 
-	@Test(expectedExceptions = IllegalAccountNumberException.class)
+	@Test(expectedExceptions = IllegalAccountNumberException.class, expectedExceptionsMessageRegExp = "no account has been found for given id: \\d{1}")
 	public void getAccountDoesNotExist() {
 		accountService.getAccountById(ACCOUNT_NOT_EXISTED);
 	}

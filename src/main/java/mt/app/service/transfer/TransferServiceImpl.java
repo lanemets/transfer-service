@@ -34,8 +34,13 @@ class TransferServiceImpl implements TransferService {
 		Account accountTo = accountDao.getAccountById(accountToId);
 
 		if (null == accountFrom || null == accountTo) {
-			logger.error("accountFrom or accountTo has not been found: accountFrom: {}, accountTo: {}", accountFrom, accountTo);
-			throw new IllegalAccountNumberException();
+			String errorMessage = String.format(
+				"accountFrom or accountTo has not been found: accountFrom: %s, accountTo: %s",
+				accountFrom,
+				accountTo
+			);
+			logger.error(errorMessage);
+			throw new IllegalAccountNumberException(errorMessage);
 		}
 
 		logger.debug("starting money transferring...");
@@ -53,8 +58,12 @@ class TransferServiceImpl implements TransferService {
 		TransferDao transferDao
 	) {
 		if (-1 == accountFrom.getBalance().compareTo(amount)) {
-			logger.error("no enough money on the account for withdrawing; account balance: {}", accountFrom.getBalance());
-			throw new NoEnoughMoneyException();
+			String errorMessage = String.format(
+				"no enough money on the account for withdrawing; account balance: %s",
+				accountFrom.getBalance()
+			);
+			logger.error(errorMessage);
+			throw new NoEnoughMoneyException(errorMessage);
 		}
 
 		Account withdraw = accountFrom.withdraw(amount);

@@ -21,7 +21,12 @@ public abstract class Server extends AbstractServer {
 			InjectorHolder.setInjector(injector);
 		}
 		Application instance = injector.getInstance(Application.class);
-		instance.start();
+		try {
+			instance.start();
+		} catch (Exception exception) {
+			logger.error("ann error has occurred on application startup", exception);
+			stop();
+		}
 	}
 
 	@Override

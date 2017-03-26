@@ -1,5 +1,6 @@
 package mt.app.server;
 
+import com.google.common.io.Resources;
 import mt.app.ApplicationConfiguration;
 import mt.app.ErrorCode;
 import mt.app.ErrorResult;
@@ -20,7 +21,6 @@ import java.math.BigDecimal;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
-import static com.google.common.io.Resources.getResource;
 import static mt.app.util.JsonUtills.json;
 import static spark.Spark.*;
 
@@ -101,14 +101,16 @@ class Application {
 
 	private static void initDb(ApplicationConfiguration applicationConfiguration) throws DatabaseInitializationException {
 		try {
-			URL scriptFile = getResource(applicationConfiguration.getInitSchemaFileName());
-			logger.debug("starting database initializing; script file: {}", scriptFile.getFile());
+			URL resource = Resources.getResource(applicationConfiguration.getInitSchemaFileName());
+			String scriptFile = resource.getPath();
+
+			logger.debug("starting database initializing; script file: {}", scriptFile);
 
 			RunScript.execute(
 				applicationConfiguration.getUrl(),
 				applicationConfiguration.getLogin(),
 				applicationConfiguration.getPassword(),
-				scriptFile.getFile(),
+				scriptFile,
 				StandardCharsets.UTF_8,
 				false
 			);

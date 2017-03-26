@@ -8,7 +8,7 @@ class PropertiesUtils {
 	private PropertiesUtils() {
 	}
 
-	public static <T> void bindProperties(Binder binder, String propertiesFile, Class<T> moduleClazz) throws Exception {
+	static <T> void bindProperties(Binder binder, String propertiesFile, Class<T> moduleClazz) throws Exception {
 		Names.bindProperties(
 			binder,
 			PropertiesLoader.loadProperties(propertiesFile, moduleClazz)

@@ -18,19 +18,19 @@ class PropertiesLoader {
 		Properties properties = new Properties();
 
 		try {
-			Object e;
+			Object object;
 			if (!StringUtils.isEmpty(fileName)) {
 				log.debug("loading properties from file; properties: {}, class: {}, file: {}", propertyFileName, clazz.getSimpleName(), fileName);
-				e = new FileInputStream(fileName);
+				object = new FileInputStream(fileName);
 			} else {
 				log.debug("loading properties from resource; properties: {}, class: {}, file: {}", propertyFileName, clazz.getSimpleName(), fileName);
 				ClassLoader loader = clazz.getClassLoader();
 				URL url = loader.getResource(propertyFileName);
 				assert null != url;
-				e = url.openStream();
+				object = url.openStream();
 			}
 
-			properties.load((InputStream) e);
+			properties.load((InputStream) object);
 			return properties;
 		} catch (IOException exception) {
 			throw new IllegalStateException(String.format("config loading error; properties file: %s", propertyFileName), exception);

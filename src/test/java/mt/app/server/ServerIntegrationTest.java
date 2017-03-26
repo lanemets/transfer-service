@@ -8,6 +8,7 @@ import mt.app.*;
 import mt.app.dao.AccountDaoModule;
 import mt.app.dao.DatabaseConfigurationModule;
 import mt.app.dao.TransferDaoModule;
+import mt.app.modules.MetricsModule;
 import mt.app.modules.TestMoneyTransferPropertiesModule;
 import mt.app.service.account.AccountServiceModule;
 import mt.app.service.transfer.TransferServiceModule;
@@ -262,6 +263,7 @@ public class ServerIntegrationTest {
 		@Override
 		protected Iterable<Module> getModules() {
 			return ImmutableList.of(
+				new MetricsModule(),
 				new TestMoneyTransferPropertiesModule(),
 				new TransferServiceModule(),
 				new TransferDaoModule(),

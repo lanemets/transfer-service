@@ -3,8 +3,8 @@ package mt.app.util;
 import com.google.gson.Gson;
 import spark.ResponseTransformer;
 
-public class JsonUtills {
-	private JsonUtills() {
+public class JsonUtils {
+	private JsonUtils() {
 	}
 
 	private static String toJson(Object object) {
@@ -12,7 +12,7 @@ public class JsonUtills {
 	}
 
 	public static ResponseTransformer json() {
-		return JsonUtills::toJson;
+		return JsonUtils::toJson;
 	}
 
 }

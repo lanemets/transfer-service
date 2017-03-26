@@ -1,5 +1,6 @@
 package mt.app.server;
 
+import com.codahale.metrics.JmxReporter;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
@@ -23,6 +24,9 @@ public abstract class Server extends AbstractServer {
 		Application instance = injector.getInstance(Application.class);
 		try {
 			instance.start();
+
+			JmxReporter jmxReporter = injector.getInstance(JmxReporter.class);
+			jmxReporter.start();
 		} catch (Exception exception) {
 			logger.error("ann error has occurred on application startup", exception);
 			stop();

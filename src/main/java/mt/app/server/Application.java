@@ -11,18 +11,14 @@ import mt.app.exceptions.NoEnoughMoneyException;
 import mt.app.service.account.AccountService;
 import mt.app.service.transfer.TransferService;
 import mt.domain.Account;
-import org.h2.tools.RunScript;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.math.BigDecimal;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 
-import static com.google.common.io.Resources.getResource;
-import static mt.app.util.JsonUtills.json;
+import static mt.app.util.JsonUtils.json;
 import static spark.Spark.*;
 
 @Singleton
@@ -33,6 +29,7 @@ class Application {
 	private final TransferService transferService;
 	private final AccountService accountService;
 	private final ApplicationConfiguration applicationConfiguration;
+	private final DbInitializer dbInitializer;
 	private final MetricRegistry metricRegistry;
 
 	@Inject
@@ -40,20 +37,22 @@ class Application {
 		TransferService transferService,
 		AccountService accountService,
 		ApplicationConfiguration applicationConfiguration,
-		MetricRegistry metricRegistry
+		DbInitializer dbInitializer, MetricRegistry metricRegistry
 	) {
 		this.transferService = transferService;
 		this.accountService = accountService;
 		this.applicationConfiguration = applicationConfiguration;
+		this.dbInitializer = dbInitializer;
 		this.metricRegistry = metricRegistry;
 	}
 
 	void start() throws DatabaseInitializationException {
 		logger.debug("starting application...");
 
-		initDb(applicationConfiguration, metricRegistry);
+		initDb(dbInitializer, metricRegistry);
 
-		port(applicationConfiguration.getPort());
+		int port = applicationConfiguration.getPort();
+		port(port);
 
 		threadPool(
 			applicationConfiguration.getMaxThreads(),
@@ -114,25 +113,15 @@ class Application {
 			}
 		}, json());
 
-		logger.debug("started on port: {}", applicationConfiguration.getPort());
+		logger.debug("started on port: {}", port);
 	}
 
 	private static void initDb(
-		ApplicationConfiguration applicationConfiguration,
+		DbInitializer dbInitializer,
 		MetricRegistry metricRegistry
 	) throws DatabaseInitializationException {
 		try {
-			URL scriptFile = getResource(applicationConfiguration.getInitSchemaFileName());
-			logger.debug("starting database initializing; script file: {}", scriptFile.getFile());
-
-			RunScript.execute(
-				applicationConfiguration.getUrl(),
-				applicationConfiguration.getLogin(),
-				applicationConfiguration.getPassword(),
-				scriptFile.getFile(),
-				StandardCharsets.UTF_8,
-				false
-			);
+			dbInitializer.initialize();
 		} catch (Exception exception) {
 			String message = "an error has occurred during init script execution. Unable to proceed";
 			logger.error(message, exception);

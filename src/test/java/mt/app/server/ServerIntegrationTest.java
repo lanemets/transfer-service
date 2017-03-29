@@ -123,11 +123,15 @@ public class ServerIntegrationTest {
 			},
 			{
 				"http://localhost:9191/transfer/4/1/500",
-				new Response<>(null, new ErrorResult(ErrorCode.ILLEGAL_ACCOUNT_ID, "invalid account numbers: 4, 1"))
+				new Response<>(null, new ErrorResult(ErrorCode.ILLEGAL_ACCOUNT_ID, "invalid account number"))
 			},
 			{
 				"http://localhost:9191/transfer/2/1/21000.00",
 				new Response<>(null, new ErrorResult(ErrorCode.NO_ENOUGH_MONEY, "no enough money on accountFrom to withdraw"))
+			},
+			{
+				"http://localhost:9191/transfer/2/1/-210.00",
+				new Response<>(null, new ErrorResult(ErrorCode.NEGATIVE_AMOUNT, "negative amount values are not permitted"))
 			}
 		};
 	}
@@ -149,7 +153,7 @@ public class ServerIntegrationTest {
 			},
 			{
 				"http://localhost:9191/account/101",
-				new Response<>(null, new ErrorResult(ErrorCode.ILLEGAL_ACCOUNT_ID, "invalid account number: 101"))
+				new Response<>(null, new ErrorResult(ErrorCode.ILLEGAL_ACCOUNT_ID, "invalid account number"))
 			}
 		};
 	}

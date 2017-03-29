@@ -7,6 +7,7 @@ import mt.app.ErrorResult;
 import mt.app.Response;
 import mt.app.exceptions.DatabaseInitializationException;
 import mt.app.exceptions.IllegalAccountNumberException;
+import mt.app.exceptions.IllegalAmountException;
 import mt.app.exceptions.NoEnoughMoneyException;
 import mt.app.service.account.AccountService;
 import mt.app.service.transfer.TransferService;
@@ -62,22 +63,30 @@ class Application {
 		);
 		put("/transfer/:from/:to/:amount", (request, response) -> {
 			try {
+				BigDecimal amount = new BigDecimal(request.params(":amount"));
+				long accountFrom = Long.valueOf(request.params(":from"));
+				long accountTo = Long.valueOf(request.params(":to"));
+
 				long txnId = transferService.transfer(
-					Long.valueOf(request.params(":from")),
-					Long.valueOf(request.params(":to")),
-					new BigDecimal(request.params(":amount"))
+					accountFrom,
+					accountTo,
+					amount
 				);
 
 				reportCounter(metricRegistry, "transfer_success");
 				return new Response<>(txnId, null);
 			} catch (IllegalAccountNumberException exception) {
-				String errorMessage = String.format("invalid account numbers: %d, %d",
-					Long.valueOf(request.params(":from")),
-					Long.valueOf(request.params(":to")));
+				String errorMessage = "invalid account number";
 				logger.error(errorMessage, exception);
 
 				reportCounter(metricRegistry, "transfer_err_illegal_account");
 				return new Response<>(null, new ErrorResult(ErrorCode.ILLEGAL_ACCOUNT_ID, errorMessage));
+			} catch (IllegalAmountException exception) {
+				String errorMessage = "negative amount values are not permitted";
+				logger.error(errorMessage, exception);
+
+				reportCounter(metricRegistry, "transfer_negative_amount");
+				return new Response<>(null, new ErrorResult(ErrorCode.NEGATIVE_AMOUNT, errorMessage));
 			} catch (NoEnoughMoneyException exception) {
 				String errorMessage = "no enough money on accountFrom to withdraw";
 				logger.error(errorMessage, exception);
@@ -100,7 +109,7 @@ class Application {
 				reportCounter(metricRegistry, "get_account_success");
 				return new Response<>(accountById, null);
 			} catch (IllegalAccountNumberException exception) {
-				String errorMessage = String.format("invalid account number: %d", Long.valueOf(request.params(":id")));
+				String errorMessage = "invalid account number";
 				logger.error(errorMessage, exception);
 
 				reportCounter(metricRegistry, "get_account_err_illegal_account");

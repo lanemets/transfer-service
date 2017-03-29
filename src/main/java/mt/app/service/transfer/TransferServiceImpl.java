@@ -3,6 +3,7 @@ package mt.app.service.transfer;
 import mt.app.dao.AccountDao;
 import mt.app.dao.TransferDao;
 import mt.app.exceptions.IllegalAccountNumberException;
+import mt.app.exceptions.IllegalAmountException;
 import mt.app.exceptions.NoEnoughMoneyException;
 import mt.domain.Account;
 import org.slf4j.Logger;
@@ -25,30 +26,38 @@ class TransferServiceImpl implements TransferService {
 	}
 
 	@Override
-	public synchronized long transfer(long accountFromId, long accountToId, BigDecimal amount)
+	public long transfer(long accountFromId, long accountToId, BigDecimal amount)
 		throws NoEnoughMoneyException, IllegalAccountNumberException {
 
-		logger.debug("starting transfer request processing; accountFrom: {}, accountTo: {}", accountFromId, accountToId);
-
-		Account accountFrom = accountDao.getAccountById(accountFromId);
-		Account accountTo = accountDao.getAccountById(accountToId);
-
-		if (null == accountFrom || null == accountTo) {
-			String errorMessage = String.format(
-				"accountFrom or accountTo has not been found: accountFrom: %s, accountTo: %s",
-				accountFrom,
-				accountTo
-			);
-			logger.error(errorMessage);
-			throw new IllegalAccountNumberException(errorMessage);
+		if (amount.signum() == -1) {
+			String message = String.format("illegal sum to withdraw; only positive values are allowed; amount: %s", amount);
+			logger.debug(message);
+			throw new IllegalAmountException(message);
 		}
 
-		logger.debug("starting money transferring...");
-		long txnId = transfer(accountFrom, accountTo, amount, transferDao);
+		synchronized (this) {
+			logger.debug("starting transfer request processing; accountFrom: {}, accountTo: {}", accountFromId, accountToId);
 
-		logger.debug("transferring has succeeded; txn id: {}", txnId);
+			Account accountFrom = accountDao.getAccountById(accountFromId);
+			Account accountTo = accountDao.getAccountById(accountToId);
 
-		return txnId;
+			if (null == accountFrom || null == accountTo) {
+				String errorMessage = String.format(
+					"accountFrom or accountTo has not been found: accountFrom: %s, accountTo: %s",
+					accountFrom,
+					accountTo
+				);
+				logger.error(errorMessage);
+				throw new IllegalAccountNumberException(errorMessage);
+			}
+
+			logger.debug("starting money transferring...");
+			long txnId = transfer(accountFrom, accountTo, amount, transferDao);
+
+			logger.debug("transferring has succeeded; txn id: {}", txnId);
+
+			return txnId;
+		}
 	}
 
 	private static long transfer(

@@ -4,6 +4,7 @@ import com.google.inject.AbstractModule;
 import mt.app.dao.AccountDao;
 import mt.app.dao.TransferDao;
 import mt.app.exceptions.IllegalAccountNumberException;
+import mt.app.exceptions.IllegalAmountException;
 import mt.app.exceptions.NoEnoughMoneyException;
 import mt.app.service.transfer.TransferService;
 import mt.app.service.transfer.TransferServiceModule;
@@ -48,6 +49,11 @@ public class TransferServiceImplTest {
 	@Test(expectedExceptions = NoEnoughMoneyException.class)
 	public void transferNotEnoughMoney() {
 		transferService.transfer(1L, 2L, AMOUNT_EXCEEDED);
+	}
+
+	@Test(expectedExceptions = IllegalAmountException.class)
+	public void transferIllegalAmount() {
+		transferService.transfer(1L, 2L, AMOUNT_EXCEEDED.negate());
 	}
 
 	public static class TestModule extends AbstractModule {

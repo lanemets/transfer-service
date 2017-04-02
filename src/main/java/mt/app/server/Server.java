@@ -9,11 +9,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spark.Spark;
 
-public abstract class Server extends AbstractServer {
+public abstract class Server {
 
 	private final Logger logger = LoggerFactory.getLogger(Server.class);
 
-	@Override
 	protected void start() {
 		logger.debug("starting server...");
 		Injector injector = InjectorHolder.getInstance();
@@ -33,7 +32,6 @@ public abstract class Server extends AbstractServer {
 		}
 	}
 
-	@Override
 	protected void stop() {
 		logger.debug("stopping server");
 		Spark.stop();

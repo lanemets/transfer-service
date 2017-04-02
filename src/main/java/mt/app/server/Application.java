@@ -61,6 +61,7 @@ class Application {
 			applicationConfiguration.getMinThreads(),
 			applicationConfiguration.getIdleTimeoutMillis()
 		);
+
 		put("/transfer/:from/:to/:amount", (request, response) -> {
 			try {
 				BigDecimal amount = new BigDecimal(request.params(":amount"));

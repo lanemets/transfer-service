@@ -1,6 +1,8 @@
 package mt.app.server;
 
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.google.inject.Module;
@@ -31,6 +33,7 @@ import java.math.BigDecimal;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
+import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -87,17 +90,11 @@ public class ServerIntegrationTest {
 	}
 
 	@Test
-	public void transfer() throws IOException {
-		HttpUriRequest transferRequest = new HttpPut("http://localhost:9191/transfer/2/1/500");
-		requestAndGetObject(transferRequest, new TypeToken<Response<Long>>() {
-		}.getType());
-
-		HttpGet accountInfoRequest = new HttpGet("http://localhost:9191/account/1");
-		Response<Account> accountFromResponse = requestAndGetObject(accountInfoRequest, new TypeToken<Response<Account>>() {
-		}.getType());
-
+	public void transfer() {
+		transferRequest(2L, 1L, new BigDecimal("500"));
+		Response<Account> accountResponse = getAccountRequest(1L);
 		assertEquals(
-			accountFromResponse,
+			accountResponse,
 			new Response<>(new Account(1L, "acc1", new BigDecimal("10500")), null)
 		);
 	}
@@ -106,7 +103,7 @@ public class ServerIntegrationTest {
 	public void transferTxnResult(
 		String transferUri,
 		Response responseExpected
-	) throws IOException {
+	) {
 		HttpUriRequest transferRequest = new HttpPut(transferUri);
 		Response<Long> objectFromResponse = requestAndGetObject(transferRequest, new TypeToken<Response<Long>>() {
 		}.getType());
@@ -137,7 +134,7 @@ public class ServerIntegrationTest {
 	}
 
 	@Test(dataProvider = "getAccountDataProvider")
-	public void getAccount(String uri, Response<Account> responseExpected) throws IOException {
+	public void getAccount(String uri, Response<Account> responseExpected) {
 		HttpGet getAccountRequest = new HttpGet(uri);
 		Response<Account> accountResponse = requestAndGetObject(getAccountRequest, new TypeToken<Response<Account>>() {
 		}.getType());
@@ -159,73 +156,88 @@ public class ServerIntegrationTest {
 	}
 
 	@Test
-	public void twoWaySimultaneouslyTransfer() throws InterruptedException, ExecutionException, TimeoutException {
-		HttpUriRequest requestDeposit = new HttpPut("http://localhost:9191/transfer/1/2/500");
-
-		ExecutorService executor = Executors.newFixedThreadPool(1);
-		Future<Response<Long>> responseTransfer = executor.submit(() -> {
-			try {
-				return requestAndGetObject(
-					requestDeposit,
-					new TypeToken<Response<Long>>() {
-					}.getType()
-				);
-			} catch (IOException e) {
-				throw e;
-			}
-		});
-
-		HttpUriRequest requestWithdraw = new HttpPut("http://localhost:9191/transfer/2/1/500");
-		AtomicReference<Response<Long>> txnId2 = new AtomicReference<>();
-		try {
-			txnId2.set(
-				requestAndGetObject(
-					requestWithdraw,
-					new TypeToken<Response<Long>>() {
-					}.getType()
+	public void concurrentTransferSucceed() {
+		Set<Future<Response<Long>>> responseFutures = Sets.newHashSet();
+		ExecutorService executorService = Executors.newFixedThreadPool(10);
+		for (int i = 0; i < 10; i++) {
+			responseFutures.add(
+				executorService.submit(
+					() -> transferRequest(1L, 2L, new BigDecimal("500"))
 				)
 			);
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
+
+		responseFutures.forEach(
+			responseFuture -> {
+				try {
+					responseFuture.get(RESPONSE_TIMEOUT, RESPONSE_TIME_UNIT);
+				} catch (InterruptedException | ExecutionException | TimeoutException e) {
+					e.printStackTrace();
+				}
+			});
+
+		Response<Account> accountRequest2 = getAccountRequest(2L);
+		Response<Account> accountRequest1 = getAccountRequest(1L);
+
+		BigDecimal balance2 = accountRequest2.getResult().getBalance();
+		BigDecimal balance1 = accountRequest1.getResult().getBalance();
+
+		assertEquals(balance2.subtract(balance1), new BigDecimal("20000"));
+	}
+
+	@Test
+	public void twoWaySimultaneouslyTransfer() throws InterruptedException, ExecutionException, TimeoutException {
+		ExecutorService executor = Executors.newFixedThreadPool(1);
+		Future<Response<Long>> responseTransfer = executor.submit(
+			() -> transferRequest(1L, 2L, new BigDecimal("500"))
+		);
+
+		AtomicReference<Response<Long>> txnId2 = new AtomicReference<>();
+		txnId2.set(transferRequest(2L, 1L, new BigDecimal("500")));
 
 		Response<Long> longResponse = responseTransfer.get(RESPONSE_TIMEOUT, RESPONSE_TIME_UNIT);
 
 		assertNotNull(longResponse.getResult());
 		assertNotNull(txnId2.get().getResult());
 
-		Response<Account> responseAccount1 = null;
-		HttpGet getAccount1 = new HttpGet("http://localhost:9191/account/1");
-		try {
-			responseAccount1 = requestAndGetObject(
-				getAccount1,
-				new TypeToken<Response<Account>>() {
-				}.getType()
-			);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		Response<Account> responseAccount2 = null;
-		HttpGet getAccount2 = new HttpGet("http://localhost:9191/account/2");
-		try {
-			responseAccount2 = requestAndGetObject(
-				getAccount2,
-				new TypeToken<Response<Account>>() {
-				}.getType()
-			);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		Response<Account> responseAccount1 = getAccountRequest(1L);
+		Response<Account> responseAccount2 = getAccountRequest(2L);
 
 		assertEquals(responseAccount1.getResult().getBalance(), new BigDecimal("10000"));
 		assertEquals(responseAccount2.getResult().getBalance(), new BigDecimal("20000"));
 	}
 
-	private <T> Response<T> requestAndGetObject(HttpUriRequest request, Type type) throws IOException {
-		HttpResponse execute = httpClient.execute(request);
-		HttpEntity entity = execute.getEntity();
-		String responseJson = IOUtils.toString(entity.getContent(), StandardCharsets.UTF_8);
+	private Response<Account> getAccountRequest(long accountId) {
+		HttpGet getAccount = new HttpGet(String.format("http://localhost:9191/account/%s", accountId));
+		return requestAndGetObject(
+			getAccount,
+			new TypeToken<Response<Account>>() {
+			}.getType()
+		);
+	}
+
+	private Response<Long> transferRequest(long accountFrom, long accountTo, BigDecimal amount) {
+		HttpUriRequest requestDeposit = new HttpPut(
+			String.format("http://localhost:9191/transfer/%s/%s/%s", accountFrom, accountTo, amount)
+		);
+
+		return requestAndGetObject(
+			requestDeposit,
+			new TypeToken<Response<Long>>() {
+			}.getType()
+		);
+	}
+
+	private <T> Response<T> requestAndGetObject(HttpUriRequest request, Type type) {
+		HttpResponse execute;
+		String responseJson;
+		try {
+			execute = httpClient.execute(request);
+			HttpEntity entity = execute.getEntity();
+			responseJson = IOUtils.toString(entity.getContent(), StandardCharsets.UTF_8);
+		} catch (IOException e) {
+			throw Throwables.propagate(e);
+		}
 
 		return new Gson().fromJson(responseJson, type);
 	}

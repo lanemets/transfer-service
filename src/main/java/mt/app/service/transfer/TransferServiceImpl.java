@@ -18,6 +18,7 @@ class TransferServiceImpl implements TransferService {
 
 	private final TransferDao transferDao;
 	private final AccountDao accountDao;
+	private final Object lock = new Object();
 
 	@Inject
 	public TransferServiceImpl(TransferDao transferDao, AccountDao accountDao) {
@@ -35,7 +36,7 @@ class TransferServiceImpl implements TransferService {
 			throw new IllegalAmountException(message);
 		}
 
-		synchronized (this) {
+		synchronized (lock) {
 			logger.debug("starting transfer request processing; accountFrom: {}, accountTo: {}", accountFromId, accountToId);
 
 			Account accountFrom = accountDao.getAccountById(accountFromId);
